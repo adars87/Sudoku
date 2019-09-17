@@ -11,19 +11,19 @@ public class Sudoku {
     long bt = 0;
     long stime,etime;
     long mins,secs,msec;
-    int[][] nsudo;
-    int[][] nstag;
-    int[][][] ncube;
-    int[] tarray =  {1,2,3,4,5,6,7,8,9};
-    int[][] sam =   {{8,0,0,0,0,0,0,0,0}
-            ,{0,0,3,6,0,0,0,0,0}
-            ,{0,7,0,0,9,0,2,0,0}
-            ,{0,5,0,0,0,7,0,0,0}
-            ,{0,0,0,0,4,5,7,0,0}
-            ,{0,0,0,1,0,0,0,3,0}
-            ,{0,0,1,0,0,0,0,6,8}
-            ,{0,0,8,5,0,0,0,1,0}
-            ,{0,9,0,0,0,0,4,0,0}};
+    int[][] nsudo; /* Sudoku */
+    int[][] nstag; /* point to the last proposed solution */
+    int[][][] ncube; /* list of all solutions */
+    int[] tarray =  {1,2,3,4,5,6,7,8,9}; /* temp array */
+    int[][] sam =   {{8,0,0,0,0,0,0,0,0} /* sample Sudoku puzzle */
+                    ,{0,0,3,6,0,0,0,0,0}
+                    ,{0,7,0,0,9,0,2,0,0}
+                    ,{0,5,0,0,0,7,0,0,0}
+                    ,{0,0,0,0,4,5,7,0,0}
+                    ,{0,0,0,1,0,0,0,3,0}
+                    ,{0,0,1,0,0,0,0,6,8}
+                    ,{0,0,8,5,0,0,0,1,0}
+                    ,{0,9,0,0,0,0,4,0,0}};
 
     public Sudoku() {
         rnum = new Random();
@@ -36,22 +36,22 @@ public class Sudoku {
 
     public boolean process(){
 
-        stime = System.nanoTime();
+        stime = System.nanoTime(); /* save the start time */
 
         for (int i=0;i<9;i++){
             for (int j=0;j<9;j++){
 
-                shuffle(i,j);
-                nsudo[i][j] = check(i,j,nstag[i][j]);
+                shuffle(i,j); /* shuffle temp array and map ncube[i][j][*] */
+                nsudo[i][j] = check(i,j,nstag[i][j]); /* solve at position(i,j) */
 
-                if (nsudo[i][j] == 0) {
+                if (nsudo[i][j] == 0) { /* if not able to solve */
 
-                    nstag[i][j] = 0;
+                    nstag[i][j] = 0; /* reset the pointer */
                     printsudo(i);
                     //printstag(i);
                     //printcube(i,j);
 
-                    if (etest()) {
+                    if (etest()) { /* if all solutions exhausted */
                         System.out.println();
                         System.out.println();
                         System.out.println("Phew !!! Not solvable...");
@@ -59,11 +59,11 @@ public class Sudoku {
                     }
 
                     do {
-                        i = backtraci(i,j);
-                        j = backtracj(i,j);
-                        bt++;
-                    } while(cval(i,j));
-                    nstag[i][j] = backtracn(i,j);
+                        i = backtraci(i,j); /* backtrace to prev row */
+                        j = backtracj(i,j); /* backtrace to prev col */
+                        bt++; 
+                    } while(cval(i,j)); /* skip already solved positions */
+                    nstag[i][j] = backtracn(i,j); /* set the pointer to new solution */
                     j--;
                 }
             }
@@ -71,41 +71,43 @@ public class Sudoku {
             //printstag(i);
         }
 
-        etime = System.nanoTime() - stime;
-        return(true);
+        etime = System.nanoTime() - stime; /* elapsed time */
+		return(true);
     }
 
     public void shuffle(int i, int j){
 
-        if (ncube[i][j][0] == 0){
+        if (ncube[i][j][0] == 0){ /* shuffle only if this is not already done */
             for(int ni=0;ni<9;ni++){
-                int itemp = rnum.nextInt(9);
+                int itemp = rnum.nextInt(9); /* fetch a random number b/w 0 and 8 */
 
-                int ntemp = tarray[ni];
+                /* swap values in temp array */
+                int ntemp = tarray[ni]; 
                 tarray[ni] = tarray[itemp];
                 tarray[itemp] = ntemp;
 
+                /* map temp array to ncube[i][j][*] */
                 ncube[i][j][ni] = tarray[ni];
                 ncube[i][j][itemp] = tarray[itemp];
             }
         }
     }
 
-    public int check(int i, int j, int c) {
+    public int check(int i, int j, int c) { 
 
-        if (nstag[i][j] == 9)
+        if (nstag[i][j] == 9) /* exit condition for recursive call */
             return nsudo[i][j];
 
-        if(nsudo[i][j] == ncube[i][j][c])
+        if(nsudo[i][j] == ncube[i][j][c]) /* if the solution is already proposed */
             return 0;
 
         nsudo[i][j] = ncube[i][j][c];
         nstag[i][j] = c;
 
-        if (verify(i, j))
+        if (verify(i, j)) /* check the value proposed*/
             return nsudo[i][j];
         else{
-            if (c < 8)
+            if (c < 8) /* iterate all solutions */
                 return (check(i,j,++c));
             else return 0;
         }
@@ -163,15 +165,15 @@ public class Sudoku {
                 try {
                     nsudo[i][j]= sc.nextInt();
                     if(nsudo[i][j] != 0)
-                        nstag[i][j] = 9;
+                        nstag[i][j] = 9; /* set pointer as 9 if already solved */
                     if(nsudo[i][j] == 33)
                         System.exit(0);
                     if(nsudo[i][j] == 88)
                         return(false);
                 } catch (InputMismatchException e) {
-                    System.err.println();
+					System.err.println();
                     System.err.println("Input Mismatch Exception: Invalid input" );
-                    System.err.println("Program restarted !" );
+                    System.err.println("Program restarted" );
                     return(false);
                 }
             }
@@ -195,27 +197,27 @@ public class Sudoku {
         }
     }
 
-    public int backtraci(int i, int j){
+    public int backtraci(int i, int j){ /* backtrace to prev row */
         if (j==0) return (--i);
         else return i;
     }
 
-    public int backtracj(int i, int j){
+    public int backtracj(int i, int j){ /* backtrace to prev col */
         if (j==0) return 8;
         else return (--j);
     }
 
-    public int backtracn(int i, int j){
+    public int backtracn(int i, int j){ 
         if (nstag[i][j] < 8) return (++nstag[i][j]);
         else return (nstag[i][j]);
     }
 
-    public boolean cval(int i, int j){
+    public boolean cval(int i, int j){ /* check if the position is already solved */
         if (nstag[i][j] == 9) return (true);
         else return (false);
     }
 
-    public boolean etest(){
+    public boolean etest(){  /* check if all solutions exhausted */
         for(int i=0;i<9;i++)
             for(int j=0;j<9;j++)
                 if ((nstag[i][j] != 0)&&(nstag[i][j] != 9))
@@ -231,7 +233,7 @@ public class Sudoku {
         return (true);
     }
 
-    public boolean evalid(){
+    public boolean evalid(){  /* check if the puzzle is valid */
         for(int i=0;i<9;i++)
             for(int j=0;j<9;j++){
                 if ((!verify(i,j)) &&(nsudo[i][j] != 0))
@@ -285,7 +287,7 @@ public class Sudoku {
             System.out.print(ncube[i][j][k]+" ");
     }
 
-    public boolean verify(int i, int j) {
+    public boolean verify(int i, int j) { /* verify the rules in a Sudoku */
 
         for(int xi = 0; xi < 9; xi++){
             if ((nsudo[xi][j] == nsudo[i][j]) && (xi != i)) {
