@@ -95,7 +95,7 @@ public class Sudoku {
 
     public int check(int i, int j, int c) { 
 
-        if (nstag[i][j] == 9) /* exit condition for recursive call */
+        if (nstag[i][j] == 9) /* if the position is already solved */
             return nsudo[i][j];
 
         if(nsudo[i][j] == ncube[i][j][c]) /* if the solution is already proposed */
@@ -107,7 +107,7 @@ public class Sudoku {
         if (verify(i, j)) /* check the value proposed*/
             return nsudo[i][j];
         else{
-            if (c < 8) /* iterate all solutions */
+            if (c < 8) /* iterate all solutions using recursive call */
                 return (check(i,j,++c));
             else return 0;
         }
